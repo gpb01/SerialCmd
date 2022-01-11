@@ -1,0 +1,127 @@
+/*
+   SerialCmd - A Wiring/Arduino library to tokenize and parse commands
+   received over a phisical/software serial port and optimized to run
+   also on ATtiny series.
+
+   Copyright (C) 2013 - 2022 Guglielmo Braguglia
+
+   Based on the SerialCommand library :
+      Copyright (C) 2012 Stefan Rado
+      Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
+                         http://husks.wordpress.com
+
+   Version 20220104
+
+   Please note:
+
+   1. Adjust the #define(s) following your requirements :
+      Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
+      and SERIALCMD_MAXBUFFER to minimize the memory usage.
+
+   2. If you want a different parametes separator, modifiy the line
+      char* SerialCmd_Sep  = SERIALCMD_COMMA; with your separator.
+
+   3. AllowedSource parameter can be:
+        SERIALCMD_FROMSTRING (or -1) : valid only as ReadString command
+        SERIALCMD_FROMALL            : always valid
+        SERIALCMD_FROMSERIAL         : valid only as ReadSer command
+
+   4. You MUST initialize the serial port (phisical or virtual) on your Setup()
+      and pass the Stream as parameter to the class constructor.
+
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+   This library is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this library.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef SERIALCMD
+#define SERIALCMD
+
+#if defined(WIRING) && WIRING >= 100
+#include <Wiring.h>
+#elif defined(ARDUINO) && ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WProgram.h>
+#endif
+
+#include <string.h>
+
+// SerialCmd configuration. Adjust following your needs
+
+#define SERIALCMD_FORCEUC    0                                    // If set to 1 force uppercase for serial command
+#define SERIALCMD_MAXCMDNUM  8                                    // Max Number of Command
+#define SERIALCMD_MAXCMDLNG  6                                    // Max Command Length
+#define SERIALCMD_MAXBUFFER 30                                    // Max Buffer  Length
+
+// Command source validity
+#define SERIALCMD_FROMSTRING -1                                   // Valid only as SerialCmd_ReadString command
+#define SERIALCMD_FROMALL     0                                   // Always valid
+#define SERIALCMD_FROMSERIAL  1                                   // Valid only as SerialCmd_ReadSer command
+
+// End Command possible characters
+#define SERIALCMD_CR      0x0D                                    // Carriage Return (char)
+#define SERIALCMD_LF      0x0A                                    // Line Feed       (char)
+#define SERIALCMD_NULL    0x00                                    // NULL            (char)
+
+// Parameter separators possible strings
+#define SERIALCMD_COMMA   ","                                     // COMMA           (C string)
+#define SERIALCMD_SEMICOL ";"                                     // SEMI COLUMN     (C string)
+#define SERIALCMD_DOT     "."                                     // DOT             (C string)
+#define SERIALCMD_SPACE   " "                                     // SPACE           (C string)
+
+// SerialCmd class definition
+
+class SerialCmd {
+   public:
+
+      SerialCmd ( Stream &mySerial, char TermCh = SERIALCMD_CR, char * SepCh = ( char * ) SERIALCMD_COMMA );                           // Constructor
+      void ReadSer ( void );
+      void AddCmd ( const char *, char, void ( * ) () );
+      char * ReadNext ( void );
+      void ReadString ( char * );
+      void Print ( char * );
+      void Print ( char );
+      void Print ( uint32_t );
+      void Print ( int32_t );
+
+   private:
+
+      struct SerialCmd_Callback {                                 // Structure to record Command/Function pairs
+         char command[SERIALCMD_MAXCMDLNG + 1];
+         char allowedSource;
+         void ( *function ) ();
+      };
+
+      SerialCmd_Callback SerialCmd_CmdList[SERIALCMD_MAXCMDNUM];  // Definition for Command/Function array
+      uint8_t SerialCmd_CmdCount;                                 // Number of defined Command/Function
+
+      char SerialCmd_Buffer[SERIALCMD_MAXBUFFER + 1];             // Serial buffer for Command
+      char SerialCmd_InChar;                                      // Serial input character
+      char * SerialCmd_Command = NULL;                            // Working variable used by strtok_r
+      char * SerialCmd_Last = NULL;                               // State variable used by strtok_r
+
+      char SerialCmd_Term;                                        // Default terminator for command (default CR)
+      char * SerialCmd_Sep = ( char * ) ",";                      // Default separator for command parameters (default = COMMA)
+
+      uint8_t SerialCmd_Idx;                                      // General index for FOR loops
+      uint8_t SerialCmd_BufferIdx;                                // Serial buffer Index
+      uint8_t SerialCmd_Found;                                    // Valid command found
+
+      Stream* theSerial;										            // Serial stream in use
+
+      void ClearBuffer ( void );
+      void ConvertUC ( void );
+};
+#endif
