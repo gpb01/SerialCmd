@@ -17,7 +17,7 @@
    1. Adjust the #define(s) following your requirements :
       Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
       and SERIALCMD_MAXBUFFER to minimize the memory usage.
-      
+
    2. Allowed string terminator from serial are:
         SERIALCMD_CR                 : Carriage Return (0x0D - char - default)
         SERIALCMD_LF                 : Line Feed       (0x0A - char)
@@ -95,6 +95,10 @@ class SerialCmd {
       void ReadString ( char * );
       void Print ( char * );
       void Print ( char );
+      void Print ( uint8_t );
+      void Print ( int8_t );
+      void Print ( uint16_t );
+      void Print ( int16_t );
       void Print ( uint32_t );
       void Print ( int32_t );
 

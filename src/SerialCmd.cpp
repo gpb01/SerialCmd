@@ -17,7 +17,7 @@
    1. Adjust the #define(s) following your requirements :
       Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
       and SERIALCMD_MAXBUFFER to minimize the memory usage.
-      
+
    2. Allowed string terminator from serial are:
         SERIALCMD_CR                 : Carriage Return (0x0D - char - default)
         SERIALCMD_LF                 : Line Feed       (0x0A - char)
@@ -145,6 +145,26 @@ void SerialCmd::Print ( char * theString ) {
 void SerialCmd::Print ( char theChar ) {
    if ( ( theSerial ) )
       theSerial->print ( theChar );
+}
+
+void SerialCmd::Print ( uint8_t theUInt8 ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theUInt8 );
+}
+
+void SerialCmd::Print ( int8_t theInt8 ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theInt8 );
+}
+
+void SerialCmd::Print ( uint16_t theUInt16 ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theUInt16 );
+}
+
+void SerialCmd::Print ( int16_t theInt16 ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theInt16 );
 }
 
 void SerialCmd::Print ( uint32_t theUInt ) {
