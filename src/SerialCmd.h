@@ -93,14 +93,14 @@ class SerialCmd {
       void AddCmd ( const char *, char, void ( * ) () );
       char * ReadNext ( void );
       void ReadString ( char * );
-      void Print ( char * );
+      void Print ( String & );
+      void Print ( char[] );
       void Print ( char );
-      void Print ( uint8_t );
-      void Print ( int8_t );
-      void Print ( uint16_t );
-      void Print ( int16_t );
-      void Print ( uint32_t );
-      void Print ( int32_t );
+      void Print ( unsigned char );
+      void Print ( int );
+      void Print ( unsigned int );
+      void Print ( long );
+      void Print ( unsigned long );
 
    private:
 

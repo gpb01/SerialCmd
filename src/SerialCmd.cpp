@@ -137,42 +137,41 @@ char * SerialCmd::ReadNext() {
    return strtok_r ( NULL, SerialCmd_Sep, &SerialCmd_Last );
 }
 
-void SerialCmd::Print ( char * theString ) {
+void SerialCmd::Print ( String &theClassString ) {
+   theSerial->write ( theClassString.c_str(), theClassString.length() );
+}
+
+void SerialCmd::Print ( char theString[] ) {
    if ( ( theSerial ) )
-      theSerial->print ( theString );
+      theSerial->write ( theString );
 }
 
 void SerialCmd::Print ( char theChar ) {
    if ( ( theSerial ) )
-      theSerial->print ( theChar );
+      theSerial->write ( theChar );
 }
 
-void SerialCmd::Print ( uint8_t theUInt8 ) {
+void SerialCmd::Print ( unsigned char theUChar ) {
    if ( ( theSerial ) )
-      theSerial->print ( theUInt8 );
+      theSerial->print ( theUChar );
 }
 
-void SerialCmd::Print ( int8_t theInt8 ) {
+void SerialCmd::Print ( int theInt ) {
    if ( ( theSerial ) )
-      theSerial->print ( theInt8 );
+      theSerial->print ( theInt );
 }
 
-void SerialCmd::Print ( uint16_t theUInt16 ) {
-   if ( ( theSerial ) )
-      theSerial->print ( theUInt16 );
-}
-
-void SerialCmd::Print ( int16_t theInt16 ) {
-   if ( ( theSerial ) )
-      theSerial->print ( theInt16 );
-}
-
-void SerialCmd::Print ( uint32_t theUInt ) {
+void SerialCmd::Print ( unsigned int theUInt ) {
    if ( ( theSerial ) )
       theSerial->print ( theUInt );
 }
 
-void SerialCmd::Print ( int32_t theInt ) {
+void SerialCmd::Print ( long theLong ) {
    if ( ( theSerial ) )
-      theSerial->print ( theInt );
+      theSerial->print ( theLong );
+}
+
+void SerialCmd::Print ( unsigned long theULong ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theULong );
 }

@@ -135,7 +135,7 @@ cPar = mySerCmd.ReadNext( );
 
 ##### Print( )
 
-Allows to send a character string (*char\**), a character (*char*), an unsigned integer (*uint8_t, uint16_t, uint32_t*) or a signed integer (*int8_t, int16_t, int32_t*) to the serial port (*hardware or software*) associated with the SerialCmd.
+Allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*) or a signed/unsigned long (*long, unsigned long*) to the serial port (*hardware or software*) associated with the SerialCmd.
 
 Example:
 
