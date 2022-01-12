@@ -10,20 +10,22 @@
       Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
                          http://husks.wordpress.com
 
-   Version 20220104
+   Version 20220112
 
    Please note:
 
    1. Adjust the #define(s) following your requirements :
       Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
       and SERIALCMD_MAXBUFFER to minimize the memory usage.
+      
+   2. Allowed string terminator from serial are:
+        SERIALCMD_CR                 : Carriage Return (0x0D - char - default)
+        SERIALCMD_LF                 : Line Feed       (0x0A - char)
+        SERIALCMD_NULL               : NULL            (0x00 - char)
 
-   2. If you want a different parametes separator, modifiy the line
-      char* SerialCmd_Sep  = SERIALCMD_COMMA; with your separator.
-
-   3. AllowedSource parameter can be:
+   3. Allowed command source parameter are:
         SERIALCMD_FROMSTRING (or -1) : valid only as ReadString command
-        SERIALCMD_FROMALL            : always valid
+        SERIALCMD_FROMALL            : always valid - default
         SERIALCMD_FROMSERIAL         : valid only as ReadSer command
 
    4. You MUST initialize the serial port (phisical or virtual) on your Setup()

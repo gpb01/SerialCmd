@@ -5,7 +5,11 @@
 
 
 
-This library enables you to to tokenize and parse commands received over a phisical/software serial port or from a memory buffer ('C' string). Based on the "SerialCommand" library originally written by Steven Cogswell on 2011 and after modified by Stefan Rado on 2012.
+Another library to enables you to to tokenize and parse commands received over a phisical/software serial port or from a memory buffer ('C' string). Based on the "SerialCommand" library originally written by Steven Cogswell on 2011 and after modified by Stefan Rado on 2012.
+
+&nbsp;&nbsp;&nbsp;• © 2022 Guglielmo Braguglia<br>
+&nbsp;&nbsp;&nbsp;• © 2012 Stefan Rado<br>
+&nbsp;&nbsp;&nbsp;• © 2011 Steven Cogswell
 
 Virtually all Arduino boards have a serial connection, normally via USB, that is very convenient and simple to use, so it would be very convenient to simply be able to send commands (*and possibly the parameters associated with them*) on it to make Arduino perform specific functions, such as turning on and off a LED or relay, positioning a servo, adjusting the speed of a motor, and so on.
 
@@ -176,8 +180,7 @@ mySerCmd.ReadString ( (char *) "LEDON" );
 ---
 ### Demo Program
 
-
-
+The following example uses the "**Serial**" serial port to manage three commands: "LEDON" which turns on the LED on the board, "LEDOF" which turns off the LED on the board and the command "LEDBL,*time*" which makes the LED blinking with half-period equal to the "*time*" parameter (*in milliseconds*). The number of flashes is counted and when a certain number is reached, the LED, by means of a command from the "**buffer**" (*therefore from the application program*), is switched off.
 
 ```
 #include <stdlib.h>
