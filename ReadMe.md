@@ -5,7 +5,7 @@
 
 
 
-Another library to enables you to to tokenize and parse commands received over a phisical/software serial port or from a memory buffer ('C' string). Based on the "SerialCommand" library originally written by Steven Cogswell on 2011 and after modified by Stefan Rado on 2012.
+Another library to enable you to tokenize and parse commands received over a phisical/software serial port or from a memory buffer ('C' string). Based on the "SerialCommand" library originally written by Steven Cogswell in 2011 and after modified by Stefan Rado in 2012.
 
 &nbsp;&nbsp;&nbsp;• © 2022 Guglielmo Braguglia<br>
 &nbsp;&nbsp;&nbsp;• © 2012 Stefan Rado<br>
