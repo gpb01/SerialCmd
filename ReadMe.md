@@ -11,7 +11,7 @@ Another library to enable you to tokenize and parse commands received over a phi
 &nbsp;&nbsp;&nbsp;• © 2012 Stefan Rado<br>
 &nbsp;&nbsp;&nbsp;• © 2011 Steven Cogswell
 
-Virtually all Arduino boards have a serial connection, normally via USB, that is very convenient and simple to use, so it would be very convenient to simply be able to send commands (*and possibly the parameters associated with them*) on it to make Arduino perform specific functions, such as turning on and off a LED or relay, positioning a servo, adjusting the speed of a motor, and so on.
+Virtually all Arduino boards have a serial connection, normally via USB, that is very convenient and simple to use, so it would be very convenient to simply be able to send commands (*and possibly the parameters associated with them*) through it to make Arduino perform specific functions, such as turning on and off a LED or relay, positioning a servo, adjusting the speed of a motor, and so on.
 
 The SerialCmd library allows you to do just that, giving the programmer the ability to create "specialized functions" to execute when certain strings are received, optionally followed by a series of parameters, separated by a prefixed "separator".
 
@@ -20,7 +20,7 @@ The SerialCmd library allows you to do just that, giving the programmer the abil
 
 ##### Memory optimization
 
-Through a series of #define, present in the .h of the library, it is possible to optimize the use of the SRAM memory, thus allowing the use of the library even on MCUs with little memory.
+Through a series of #define, present in the .h of the library, it is possible to optimize the use of the SRAM memory, so as to allow the use of the library even on MCUs with little memory.
 
 ```
 #define SERIALCMD_MAXCMDNUM  8             // Max Number of Command
@@ -38,13 +38,13 @@ SERIALCMD_MAXBUFFER: Indicates the maximum length, expressed in characters, of t
 
 A further series of #define defines:
 
-1. if you want to force upper-case (*also if you type in lower case*) the "**command**" sent on the serial port (*hardware or software*). The parameters are not involved. Value 0 do not convert, 1 convert to upper.
+1. if you want to force upper-case (*also if you type in lower case*) the "**command**" sent on the serial port (*hardware or software*). The parameters are not involved. Value 0 does not convert, 1 converts to upper.
 
 2. the source from which the received command is considered valid (*only from serial port, only from memory buffer, from both*)
 
 3. the character indicating the end of the command (*CR = 0x0D, LF = 0x0A or NULL = 0x00*)
 
-4. in catarrere used as a separator between the command identifier and the various parameters (*comma, semicolon, period, space*)
+4. the character used as a separator between the command identifier and the various parameters (*comma, semicolon, period, space*)
 
 ```
 #define SERIALCMD_FORCEUC     0           // If set to 1 force uppercase for serial command
@@ -98,7 +98,7 @@ SerialCmd mySerCmd( Serial, SERIALCMD_LF, (char *) SERIALCMD_SEMICOL );
 
 ##### AddCmd ( const char *command, char allowedSource, void ( *function ) () )
 
-Add a "commnd" to the list of recognized commands and defines which function should be called. Parameter "allowedSource" can be one of defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*)
+Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*)
 
 Example:
 
@@ -106,7 +106,7 @@ Example:
 mySerCmd.AddCmd( "LEDON", SERIALCMD_FROMALL, set_LedOn );
 ```
 
-... where "LEDON" is the commend, SERIALCMD_FROMALL indicate that is valid both from serial port or from memory buffer (*'C' string*) and set_LedOn is a function defined as:
+... where "LEDON" is the command, SERIALCMD_FROMALL indicates that is valid both from serial port or from memory buffer (*'C' string*) and set_LedOn is a function defined as:
 
 ```
 void set_LedOn ( void ) {
@@ -135,7 +135,7 @@ cPar = mySerCmd.ReadNext( );
 
 ##### Print( )
 
-Allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*) or a signed/unsigned long (*long, unsigned long*) to the serial port (*hardware or software*) associated with the SerialCmd.
+It allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*) or a signed/unsigned long (*long, unsigned long*) to the serial port (*hardware or software*) associated with the SerialCmd.
 
 Example:
 
