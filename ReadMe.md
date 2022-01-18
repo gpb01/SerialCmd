@@ -232,6 +232,9 @@ void setup() {
    pinMode ( LED_BUILTIN, OUTPUT );
    digitalWrite ( LED_BUILTIN, ledStatus );
    Serial.begin ( 9600 );
+   while ( !Serial ) {
+      delay ( 100 );
+   }
    //
    mySerCmd.AddCmd ( "LEDON" , SERIALCMD_FROMALL, set_LEDON );
    mySerCmd.AddCmd ( "LEDOF" , SERIALCMD_FROMALL, set_LEDOF );
