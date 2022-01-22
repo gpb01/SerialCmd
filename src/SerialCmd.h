@@ -119,7 +119,8 @@ class SerialCmd {
       char * SerialCmd_Last = NULL;                               // State variable used by strtok_r
 
       char SerialCmd_Term;                                        // Default terminator for command (default CR)
-      char * SerialCmd_Sep = ( char * ) ",";                      // Default separator for command parameters (default = COMMA)
+      char SerialCmd_SepCh[2] = ",";                              // Allocate spece for separator characther (default = COMMA)
+      char * SerialCmd_Sep = SerialCmd_SepCh;                     // Pointer to separator character
 
       uint8_t SerialCmd_Idx;                                      // General index for FOR loops
       uint8_t SerialCmd_BufferIdx;                                // Serial buffer Index

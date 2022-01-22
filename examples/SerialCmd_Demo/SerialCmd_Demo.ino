@@ -1,8 +1,11 @@
 #include <stdlib.h>
-#include "SerialCmd.h"
+#include <SerialCmd.h>
+
+#define LED_OFF   LOW               // adjust for your board
+#define LED_ON    HIGH              // adjust for your board
 
 bool     isBlinking   = false;      // Indicates whether blinking is active or not
-uint8_t  ledStatus    = LOW;        // BUILTIN_LED status (OFF/ON)
+uint8_t  ledStatus    = LED_OFF;    // BUILTIN_LED status (OFF/ON)
 uint8_t  blinkingCnt  = 0;          // Number of led status changes before turning off blinking
 uint32_t blinkingTime = 0;          // Time of led status change
 uint32_t blinkingLast = 0;          // Last millis() in which the status of the led was changed
@@ -15,15 +18,15 @@ void sendOK ( void ) {
 
 void set_LEDON ( void ) {
    isBlinking = false;
-   ledStatus  = HIGH;
-   digitalWrite ( LED_BUILTIN, HIGH );
+   ledStatus  = LED_ON;
+   digitalWrite ( LED_BUILTIN, LED_ON );
    sendOK();
 }
 
 void set_LEDOF ( void ) {
    isBlinking = false;
-   ledStatus  = LOW;
-   digitalWrite ( LED_BUILTIN, LOW );
+   ledStatus  = LED_OFF;
+   digitalWrite ( LED_BUILTIN, LED_OFF );
    sendOK();
 }
 
@@ -49,6 +52,8 @@ void setup() {
    Serial.begin ( 9600 );
    while ( !Serial ) {
       delay ( 100 );
+      ledStatus = !ledStatus;
+      digitalWrite ( LED_BUILTIN, ledStatus );
    }
    //
    mySerCmd.AddCmd ( "LEDON" , SERIALCMD_FROMALL, set_LEDON );
