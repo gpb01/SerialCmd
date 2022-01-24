@@ -49,6 +49,10 @@
 
 #include "SerialCmd.h"
 
+/*
+   --- Private methods ---
+*/
+
 void SerialCmd::ClearBuffer() {
    SerialCmd_Buffer[0] = 0x00;
    SerialCmd_BufferIdx = 0;
@@ -61,6 +65,27 @@ void SerialCmd::ConvertUC() {
       }
    }
 }
+
+void SerialCmd::ReadStringCommon () {
+   SerialCmd_Command = strtok_r ( SerialCmd_Buffer, SerialCmd_Sep, &SerialCmd_Last );
+   SerialCmd_Found = false;
+   if ( SerialCmd_Command != NULL ) {
+      for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
+         if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
+            if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource <= 0 ) {
+               ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
+               SerialCmd_Found = true;
+               break;
+            }
+         }
+      }
+   }
+   ClearBuffer();
+}
+
+/*
+   --- Public methods ---
+*/
 
 SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
    ClearBuffer();
@@ -80,9 +105,9 @@ void SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *functi
 }
 
 #ifdef __AVR__
-void SerialCmd::AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
+void SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
    if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
-      strncpy_P ( SerialCmd_CmdList[SerialCmd_CmdCount].command, (const char*) command, SERIALCMD_MAXCMDLNG );
+      strncpy_P ( SerialCmd_CmdList[SerialCmd_CmdCount].command, ( const char* ) command, SERIALCMD_MAXCMDLNG );
       SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
       SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
       SerialCmd_CmdCount++;
@@ -128,21 +153,17 @@ void SerialCmd::ReadString ( char * theCmd ) {
    if ( strlen ( theCmd ) >= SERIALCMD_MAXBUFFER ) return;
    //
    strcpy ( SerialCmd_Buffer, theCmd );
-   SerialCmd_Command = strtok_r ( SerialCmd_Buffer, SerialCmd_Sep, &SerialCmd_Last );
-   SerialCmd_Found = false;
-   if ( SerialCmd_Command != NULL ) {
-      for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
-         if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
-            if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource <= 0 ) {
-               ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
-               SerialCmd_Found = true;
-               break;
-            }
-         }
-      }
-   }
-   ClearBuffer();
+   ReadStringCommon();
 }
+
+#ifdef __AVR__
+void SerialCmd::ReadString ( const __FlashStringHelper * theCmd ) {
+   if ( strlen_P ( ( const char* ) theCmd ) >= SERIALCMD_MAXBUFFER ) return;
+   //
+   strcpy_P ( SerialCmd_Buffer, ( const char* ) theCmd );
+   ReadStringCommon();
+}
+#endif
 
 char * SerialCmd::ReadNext() {
    return strtok_r ( NULL, SerialCmd_Sep, &SerialCmd_Last );
@@ -158,7 +179,7 @@ void SerialCmd::Print ( char theString[] ) {
 }
 
 #ifdef __AVR__
-void SerialCmd::Print ( const __FlashStringHelper * theString) {
+void SerialCmd::Print ( const __FlashStringHelper * theString ) {
    if ( ( theSerial ) )
       theSerial->print ( theString );
 }

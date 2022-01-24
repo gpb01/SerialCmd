@@ -105,8 +105,9 @@ class SerialCmd {
       void Print ( long );
       void Print ( unsigned long );
 #ifdef __AVR__
-      void AddCmd( const __FlashStringHelper *, char, void ( * )() );
-      void Print ( const __FlashStringHelper *);
+      void AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
+      void ReadString ( const __FlashStringHelper * );
+      void Print ( const __FlashStringHelper * );
 #endif
 
    private:
@@ -137,5 +138,6 @@ class SerialCmd {
 
       void ClearBuffer ( void );
       void ConvertUC ( void );
+      void ReadStringCommon ( void );
 };
 #endif

@@ -89,7 +89,11 @@ void loop() {
    //
    if ( blinkingCnt >= 10 ) {
       blinkingCnt  = 0;
+#ifdef __AVR__
+      mySerCmd.ReadString ( F ( "LEDOF" ) );
+#else
       mySerCmd.ReadString ( ( char * ) "LEDOF" );
+#endif
    }
    //
    mySerCmd.ReadSer();

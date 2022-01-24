@@ -209,6 +209,21 @@ mySerCmd.ReadString ( (char *) "LEDON" );
 ```
 
 ---
+
+##### ReadString ( const __FlashStringHelper * theCmd )
+
+Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*).
+
+Example:
+
+```
+mySerCmd.ReadString ( F ( "LEDON" ) );
+```
+
+...  where the command string is stored in PROGMEM instead of SRAM to reduce memory occupation.
+
+---
+
 ### Demo Program
 
 The following example uses the "**Serial**" serial port to manage three commands: "LEDON" which turns on the LED on the board, "LEDOF" which turns off the LED on the board and the command "LEDBL,*time*" which makes the LED blinking with half-period equal to the "*time*" parameter (*in milliseconds*). The number of flashes is counted and when a certain number is reached, the LED, by means of a command from the "**buffer**" (*therefore from the application program*), is switched off.
@@ -229,7 +244,11 @@ uint32_t blinkingLast = 0;          // Last millis() in which the status of the 
 SerialCmd mySerCmd ( Serial );      // Initialize the SerialCmd constructor using the "Serial" port
 
 void sendOK ( void ) {
+#ifdef __AVR__
+   mySerCmd.Print ( F ( "OK \r\n" ) );
+#else
    mySerCmd.Print ( ( char * ) "OK \r\n" );
+#endif
 }
 
 void set_LEDON ( void ) {
@@ -251,7 +270,11 @@ void set_LEDBL ( void ) {
    //
    sParam = mySerCmd.ReadNext();
    if ( sParam == NULL ) {
+#ifdef __AVR__
+      mySerCmd.Print ( F ( "ERROR: Missing blinking time \r\n" ) );
+#else
       mySerCmd.Print ( ( char * ) "ERROR: Missing blinking time \r\n" );
+#endif
       return;
    }
    blinkingCnt  = 0;
@@ -277,7 +300,7 @@ void setup() {
    mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF );
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
    //
-   mySerCmd.Print ( ( char * ) "INFO: Program running on AVR ... \r\n" );
+   mySerCmd.Print ( F ( "INFO: Program running on AVR ... \r\n" ) );
 #else
    mySerCmd.AddCmd ( "LEDON", SERIALCMD_FROMALL, set_LEDON );
    mySerCmd.AddCmd ( "LEDOF", SERIALCMD_FROMALL, set_LEDOF );
@@ -297,12 +320,15 @@ void loop() {
    //
    if ( blinkingCnt >= 10 ) {
       blinkingCnt  = 0;
+#ifdef __AVR__
+      mySerCmd.ReadString ( F ( "LEDOF" ) );
+#else
       mySerCmd.ReadString ( ( char * ) "LEDOF" );
+#endif
    }
    //
    mySerCmd.ReadSer();
 }
 ```
-
 
 ---
