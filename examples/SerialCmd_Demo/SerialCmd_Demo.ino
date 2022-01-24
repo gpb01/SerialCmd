@@ -13,7 +13,11 @@ uint32_t blinkingLast = 0;          // Last millis() in which the status of the 
 SerialCmd mySerCmd ( Serial );      // Initialize the SerialCmd constructor using the "Serial" port
 
 void sendOK ( void ) {
+#ifdef __AVR__
+   mySerCmd.Print ( F ( "OK \r\n" ) );
+#else
    mySerCmd.Print ( ( char * ) "OK \r\n" );
+#endif
 }
 
 void set_LEDON ( void ) {
@@ -35,7 +39,11 @@ void set_LEDBL ( void ) {
    //
    sParam = mySerCmd.ReadNext();
    if ( sParam == NULL ) {
+#ifdef __AVR__
+      mySerCmd.Print ( F ( "ERROR: Missing blinking time \r\n" ) );
+#else
       mySerCmd.Print ( ( char * ) "ERROR: Missing blinking time \r\n" );
+#endif
       return;
    }
    blinkingCnt  = 0;
@@ -61,7 +69,7 @@ void setup() {
    mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF );
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
    //
-   mySerCmd.Print ( ( char * ) "INFO: Program running on AVR ... \r\n" );
+   mySerCmd.Print ( F ( "INFO: Program running on AVR ... \r\n" ) );
 #else
    mySerCmd.AddCmd ( "LEDON", SERIALCMD_FROMALL, set_LEDON );
    mySerCmd.AddCmd ( "LEDOF", SERIALCMD_FROMALL, set_LEDOF );

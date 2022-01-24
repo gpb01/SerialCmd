@@ -160,10 +160,18 @@ cPar = mySerCmd.ReadNext( );
 
 It allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*) or a signed/unsigned long (*long, unsigned long*) to the serial port (*hardware or software*) associated with the SerialCmd.
 
+On AVR architecture it also allows the use of the macro F (), with constant strings, to reduce the SRAM occupation. 
+
 Example:
 
 ```
 mySerCmd.Print( (char *) "This is a message \r\n" );
+```
+
+... or, with AVR MCU, you can use:
+
+```
+mySerCmd.Print( F ( "This is a message \r\n" ) );
 ```
 
 ---

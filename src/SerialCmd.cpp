@@ -157,6 +157,13 @@ void SerialCmd::Print ( char theString[] ) {
       theSerial->write ( theString );
 }
 
+#ifdef __AVR__
+void SerialCmd::Print ( const __FlashStringHelper * theString) {
+   if ( ( theSerial ) )
+      theSerial->print ( theString );
+}
+#endif
+
 void SerialCmd::Print ( char theChar ) {
    if ( ( theSerial ) )
       theSerial->write ( theChar );

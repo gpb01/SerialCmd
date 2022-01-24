@@ -106,6 +106,7 @@ class SerialCmd {
       void Print ( unsigned long );
 #ifdef __AVR__
       void AddCmd( const __FlashStringHelper *, char, void ( * )() );
+      void Print ( const __FlashStringHelper *);
 #endif
 
    private:
