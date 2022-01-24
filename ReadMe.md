@@ -118,6 +118,29 @@ void set_LedOn ( void ) {
 
 ---
 
+##### AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function )() );
+
+Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*)
+
+Example:
+
+```
+mySerCmd.AddCmd( F ( "LEDON" ), SERIALCMD_FROMALL, set_LedOn );
+```
+
+... where F ( "LEDON" ) is the command (*string is stored in PROGMEM instead of SRAM to reduce memory occupation*), SERIALCMD_FROMALL indicates that is valid both from serial port or from memory buffer (*'C' string*) and set_LedOn is a function defined as:
+
+```
+void set_LedOn ( void ) {
+   ...
+}
+```
+
+... which is called upon receipt of the LEDON command.
+
+---
+
+
 ##### ReadNext( )
 
 Return the address of the string that contains the next parameter, if there is no next parameter, it contains the value NULL. It is normally used within the function called by the "command" to retrieve any parameters.
@@ -186,8 +209,11 @@ The following example uses the "**Serial**" serial port to manage three commands
 #include <stdlib.h>
 #include <SerialCmd.h>
 
+#define LED_OFF   LOW               // adjust for your board
+#define LED_ON    HIGH              // adjust for your board
+
 bool     isBlinking   = false;      // Indicates whether blinking is active or not
-uint8_t  ledStatus    = LOW;        // BUILTIN_LED status (OFF/ON)
+uint8_t  ledStatus    = LED_OFF;    // BUILTIN_LED status (OFF/ON)
 uint8_t  blinkingCnt  = 0;          // Number of led status changes before turning off blinking
 uint32_t blinkingTime = 0;          // Time of led status change
 uint32_t blinkingLast = 0;          // Last millis() in which the status of the led was changed
@@ -200,15 +226,15 @@ void sendOK ( void ) {
 
 void set_LEDON ( void ) {
    isBlinking = false;
-   ledStatus  = HIGH;
-   digitalWrite ( LED_BUILTIN, HIGH );
+   ledStatus  = LED_ON;
+   digitalWrite ( LED_BUILTIN, LED_ON );
    sendOK();
 }
 
 void set_LEDOF ( void ) {
    isBlinking = false;
-   ledStatus  = LOW;
-   digitalWrite ( LED_BUILTIN, LOW );
+   ledStatus  = LED_OFF;
+   digitalWrite ( LED_BUILTIN, LED_OFF );
    sendOK();
 }
 
@@ -234,13 +260,23 @@ void setup() {
    Serial.begin ( 9600 );
    while ( !Serial ) {
       delay ( 100 );
+      ledStatus = !ledStatus;
+      digitalWrite ( LED_BUILTIN, ledStatus );
    }
    //
-   mySerCmd.AddCmd ( "LEDON" , SERIALCMD_FROMALL, set_LEDON );
-   mySerCmd.AddCmd ( "LEDOF" , SERIALCMD_FROMALL, set_LEDOF );
-   mySerCmd.AddCmd ( "LEDBL" , SERIALCMD_FROMALL, set_LEDBL );
+#ifdef __AVR__
+   mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON );
+   mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF );
+   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
+   //
+   mySerCmd.Print ( ( char * ) "INFO: Program running on AVR ... \r\n" );
+#else
+   mySerCmd.AddCmd ( "LEDON", SERIALCMD_FROMALL, set_LEDON );
+   mySerCmd.AddCmd ( "LEDOF", SERIALCMD_FROMALL, set_LEDOF );
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
    //
    mySerCmd.Print ( ( char * ) "INFO: Program running ... \r\n" );
+#endif
 }
 
 void loop() {

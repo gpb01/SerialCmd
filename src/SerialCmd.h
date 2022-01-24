@@ -59,13 +59,16 @@
 #endif
 
 #include <string.h>
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#endif
 
 // SerialCmd configuration. Adjust following your needs
 
 #define SERIALCMD_FORCEUC    0                                    // If set to 1 force uppercase for serial command
-#define SERIALCMD_MAXCMDNUM  8                                    // Max Number of Command
+#define SERIALCMD_MAXCMDNUM 16                                    // Max Number of Command
 #define SERIALCMD_MAXCMDLNG  6                                    // Max Command Length
-#define SERIALCMD_MAXBUFFER 30                                    // Max Buffer  Length
+#define SERIALCMD_MAXBUFFER 64                                    // Max Buffer  Length
 
 // Command source validity
 #define SERIALCMD_FROMSTRING -1                                   // Valid only as SerialCmd_ReadString command
@@ -101,6 +104,9 @@ class SerialCmd {
       void Print ( unsigned int );
       void Print ( long );
       void Print ( unsigned long );
+#ifdef __AVR__
+      void AddCmd( const __FlashStringHelper *, char, void ( * )() );
+#endif
 
    private:
 

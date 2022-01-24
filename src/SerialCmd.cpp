@@ -79,6 +79,17 @@ void SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *functi
    }
 }
 
+#ifdef __AVR__
+void SerialCmd::AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
+   if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
+      strncpy_P ( SerialCmd_CmdList[SerialCmd_CmdCount].command, (const char*) command, SERIALCMD_MAXCMDLNG );
+      SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
+      SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
+      SerialCmd_CmdCount++;
+   }
+}
+#endif
+
 void SerialCmd::ReadSer() {
    while ( theSerial->available() > 0 ) {
       SerialCmd_InChar = theSerial->read();

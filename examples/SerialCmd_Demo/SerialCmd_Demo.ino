@@ -56,11 +56,19 @@ void setup() {
       digitalWrite ( LED_BUILTIN, ledStatus );
    }
    //
-   mySerCmd.AddCmd ( "LEDON" , SERIALCMD_FROMALL, set_LEDON );
-   mySerCmd.AddCmd ( "LEDOF" , SERIALCMD_FROMALL, set_LEDOF );
-   mySerCmd.AddCmd ( "LEDBL" , SERIALCMD_FROMALL, set_LEDBL );
+#ifdef __AVR__
+   mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON );
+   mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF );
+   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
+   //
+   mySerCmd.Print ( ( char * ) "INFO: Program running on AVR ... \r\n" );
+#else
+   mySerCmd.AddCmd ( "LEDON", SERIALCMD_FROMALL, set_LEDON );
+   mySerCmd.AddCmd ( "LEDOF", SERIALCMD_FROMALL, set_LEDOF );
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
    //
    mySerCmd.Print ( ( char * ) "INFO: Program running ... \r\n" );
+#endif
 }
 
 void loop() {
