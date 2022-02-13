@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
    
-*/
+*/ 
 
 #if defined ( ARDUINO_ARCH_ESP8266 )
 #include <ESP8266WiFi.h>

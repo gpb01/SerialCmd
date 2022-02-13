@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
    
-*/
+*/ 
 
 #define MAX_BUFFER	255                               // Record buffer max size
 #define LED_OFF      LOW                               // Adjust for your board
