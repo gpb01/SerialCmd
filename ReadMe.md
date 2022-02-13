@@ -1,4 +1,4 @@
-# SerialCmd Library
+# SerialCmd Library v1.0.8
 © 2022 Guglielmo Braguglia
 
 ---
