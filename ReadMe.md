@@ -98,12 +98,12 @@ SerialCmd mySerCmd( Serial, SERIALCMD_LF, (char *) SERIALCMD_SEMICOL );
 
 ##### AddCmd ( const char *command, char allowedSource, void ( *function ) () )
 
-Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*)
+Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Return and uint8_t to indicate whether the command was added (*true value*) or not (*false value*).
 
 Example:
 
 ```
-mySerCmd.AddCmd( "LEDON", SERIALCMD_FROMALL, set_LedOn );
+ret = mySerCmd.AddCmd( "LEDON", SERIALCMD_FROMALL, set_LedOn );
 ```
 
 ... where "LEDON" is the command, SERIALCMD_FROMALL indicates that is valid both from serial port or from memory buffer (*'C' string*) and set_LedOn is a function defined as:
@@ -120,12 +120,12 @@ void set_LedOn ( void ) {
 
 ##### AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function )() );
 
-Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*)
+Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Return and uint8_t to indicate whether the command was added (*true value*) or not (*false value*).
 
 Example:
 
 ```
-mySerCmd.AddCmd( F ( "LEDON" ), SERIALCMD_FROMALL, set_LedOn );
+ret = mySerCmd.AddCmd( F ( "LEDON" ), SERIALCMD_FROMALL, set_LedOn );
 ```
 
 ... where F ( "LEDON" ) is the command (*string is stored in PROGMEM instead of SRAM to reduce memory occupation*), SERIALCMD_FROMALL indicates that is valid both from serial port or from memory buffer (*'C' string*) and set_LedOn is a function defined as:
@@ -200,24 +200,24 @@ void loop( ) {
 
 ##### ReadString ( char * theCmd )
 
-It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*).
+It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Return and uint8_t to indicate whether the command was recognized (*true value*) or not (*false value*).
 
 Example:
 
 ```
-mySerCmd.ReadString ( (char *) "LEDON" );
+ret = mySerCmd.ReadString ( (char *) "LEDON" );
 ```
 
 ---
 
 ##### ReadString ( const __FlashStringHelper * theCmd )
 
-Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*).
+Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Return and uint8_t to indicate whether the command was recognized (*true value*) or not (*false value*).
 
 Example:
 
 ```
-mySerCmd.ReadString ( F ( "LEDON" ) );
+ret = mySerCmd.ReadString ( F ( "LEDON" ) );
 ```
 
 ...  where the command string is stored in PROGMEM instead of SRAM to reduce memory occupation.
@@ -289,11 +289,21 @@ void setup() {
    pinMode ( LED_BUILTIN, OUTPUT );
    digitalWrite ( LED_BUILTIN, ledStatus );
    Serial.begin ( 9600 );
+   //
+#ifdef ARDUINO_ARCH_STM32
+   for ( uint8_t i = 0; i < 7; i++ ) {
+      // create a 3500 msec delay with blink for STM Nucleo boards
+      delay ( 500 );
+      ledStatus = !ledStatus;
+      digitalWrite ( LED_BUILTIN, ledStatus );
+   }
+#else
    while ( !Serial ) {
       delay ( 100 );
       ledStatus = !ledStatus;
       digitalWrite ( LED_BUILTIN, ledStatus );
    }
+#endif
    //
 #ifdef __AVR__
    mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON );
@@ -311,6 +321,8 @@ void setup() {
 }
 
 void loop() {
+   uint8_t ret;
+   //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
       ledStatus = !ledStatus;
       digitalWrite ( LED_BUILTIN, ledStatus );
@@ -321,14 +333,20 @@ void loop() {
    if ( blinkingCnt >= 10 ) {
       blinkingCnt  = 0;
 #ifdef __AVR__
-      mySerCmd.ReadString ( F ( "LEDOF" ) );
+      ret = mySerCmd.ReadString ( F ( "LEDOF" ) );
 #else
-      mySerCmd.ReadString ( ( char * ) "LEDOF" );
+      ret = mySerCmd.ReadString ( ( char * ) "LEDOF" );
 #endif
+      if ( ret == false ) {
+         // error processing command from string ...
+         // ... insert here error handling.
+
+      }
    }
    //
    mySerCmd.ReadSer();
 }
+
 ```
 
 ---

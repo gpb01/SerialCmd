@@ -95,17 +95,20 @@ SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
    strlcpy ( SerialCmd_Sep, SepCh, 2 );
 }
 
-void SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *function ) () ) {
+uint8_t SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *function ) () ) {
    if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
       strncpy ( SerialCmd_CmdList[SerialCmd_CmdCount].command, command, SERIALCMD_MAXCMDLNG );
       SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
       SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
       SerialCmd_CmdCount++;
+      return 1;
+   } else {
+      return 0;
    }
 }
 
 #ifdef __AVR__
-void SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
+uint8_t SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
    if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
       strncpy_P ( SerialCmd_CmdList[SerialCmd_CmdCount].command, ( const char* ) command, SERIALCMD_MAXCMDLNG );
       SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
@@ -149,19 +152,21 @@ void SerialCmd::ReadSer() {
    }
 }
 
-void SerialCmd::ReadString ( char * theCmd ) {
-   if ( strlen ( theCmd ) >= SERIALCMD_MAXBUFFER ) return;
+uint8_t SerialCmd::ReadString ( char * theCmd ) {
+   if ( strlen ( theCmd ) >= SERIALCMD_MAXBUFFER ) return false;
    //
    strcpy ( SerialCmd_Buffer, theCmd );
    ReadStringCommon();
+   return SerialCmd_Found;
 }
 
 #ifdef __AVR__
-void SerialCmd::ReadString ( const __FlashStringHelper * theCmd ) {
-   if ( strlen_P ( ( const char* ) theCmd ) >= SERIALCMD_MAXBUFFER ) return;
+uint8_t SerialCmd::ReadString ( const __FlashStringHelper * theCmd ) {
+   if ( strlen_P ( ( const char* ) theCmd ) >= SERIALCMD_MAXBUFFER ) return false;
    //
    strcpy_P ( SerialCmd_Buffer, ( const char* ) theCmd );
    ReadStringCommon();
+   return SerialCmd_Found;
 }
 #endif
 

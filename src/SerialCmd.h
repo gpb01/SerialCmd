@@ -93,9 +93,9 @@ class SerialCmd {
 
       SerialCmd ( Stream &mySerial, char TermCh = SERIALCMD_CR, char * SepCh = ( char * ) SERIALCMD_COMMA );                           // Constructor
       void ReadSer ( void );
-      void AddCmd ( const char *, char, void ( * ) () );
+      uint8_t AddCmd ( const char *, char, void ( * ) () );
       char * ReadNext ( void );
-      void ReadString ( char * );
+      uint8_t ReadString ( char * );
       void Print ( String & );
       void Print ( char[] );
       void Print ( char );
@@ -105,8 +105,8 @@ class SerialCmd {
       void Print ( long );
       void Print ( unsigned long );
 #ifdef __AVR__
-      void AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
-      void ReadString ( const __FlashStringHelper * );
+      uint8_t AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
+      uint8_t ReadString ( const __FlashStringHelper * );
       void Print ( const __FlashStringHelper * );
 #endif
 
@@ -114,7 +114,7 @@ class SerialCmd {
 
       struct SerialCmd_Callback {                                 // Structure to record Command/Function pairs
          char command[SERIALCMD_MAXCMDLNG + 1];
-         char allowedSource;
+         signed char allowedSource;
          void ( *function ) ();
       };
 

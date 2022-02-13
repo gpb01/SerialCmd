@@ -1,3 +1,22 @@
+/*
+   Demo_SerialCmd - A simple program to demostrate the use of SerialCmd
+   library to show the capability to receive commands via serial port.
+
+   Copyright (C) 2013 - 2022 Guglielmo Braguglia
+
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+   This is free software: you can redistribute it and/or modify it under
+   the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This software is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+   
+*/
 #include <stdlib.h>
 #include <SerialCmd.h>
 
@@ -58,11 +77,21 @@ void setup() {
    pinMode ( LED_BUILTIN, OUTPUT );
    digitalWrite ( LED_BUILTIN, ledStatus );
    Serial.begin ( 9600 );
+   //
+#ifdef ARDUINO_ARCH_STM32
+   for ( uint8_t i = 0; i < 7; i++ ) {
+      // create a 3500 msec delay with blink for STM Nucleo boards
+      delay ( 500 );
+      ledStatus = !ledStatus;
+      digitalWrite ( LED_BUILTIN, ledStatus );
+   }
+#else
    while ( !Serial ) {
       delay ( 100 );
       ledStatus = !ledStatus;
       digitalWrite ( LED_BUILTIN, ledStatus );
    }
+#endif
    //
 #ifdef __AVR__
    mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON );
@@ -80,6 +109,8 @@ void setup() {
 }
 
 void loop() {
+   uint8_t ret;
+   //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
       ledStatus = !ledStatus;
       digitalWrite ( LED_BUILTIN, ledStatus );
@@ -90,10 +121,15 @@ void loop() {
    if ( blinkingCnt >= 10 ) {
       blinkingCnt  = 0;
 #ifdef __AVR__
-      mySerCmd.ReadString ( F ( "LEDOF" ) );
+      ret = mySerCmd.ReadString ( F ( "LEDOF" ) );
 #else
-      mySerCmd.ReadString ( ( char * ) "LEDOF" );
+      ret = mySerCmd.ReadString ( ( char * ) "LEDOF" );
 #endif
+      if ( ret == false ) {
+         // error processing command from string ...
+         // ... insert here error handling.
+
+      }
    }
    //
    mySerCmd.ReadSer();
