@@ -114,6 +114,9 @@ uint8_t SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSour
       SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
       SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
       SerialCmd_CmdCount++;
+      return 1;
+   } else {
+      return 0;
    }
 }
 #endif
