@@ -184,7 +184,8 @@ void setup() {
 // ------------------------------------------------------------------
 
 void loop() {
-   char* retVal;
+   char*  retVal;
+   int8_t erc;
    //
    retVal = checkWiFiCommand();
    if ( retVal != NULL ) {
@@ -204,7 +205,9 @@ void loop() {
       mySerCmd.ReadString ( ( char * ) "LEDOF" );
    }
    //
-   mySerCmd.ReadSer();
+   erc = mySerCmd.ReadSer();
+   if ( erc == 0 )
+      mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
    //
    yield();
 }

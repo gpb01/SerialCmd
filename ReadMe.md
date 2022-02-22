@@ -1,4 +1,4 @@
-# SerialCmd Library v1.0.8
+# SerialCmd Library v1.1.0
 © 2022 Guglielmo Braguglia
 
 ---
@@ -96,9 +96,9 @@ SerialCmd mySerCmd( Serial, SERIALCMD_LF, (char *) SERIALCMD_SEMICOL );
 
 ### Library methods
 
-##### AddCmd ( const char *command, char allowedSource, void ( *function ) () )
+##### uint8_t AddCmd ( const char *command, char allowedSource, void ( *function ) () )
 
-Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Return and uint8_t to indicate whether the command was added (*true value*) or not (*false value*).
+Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Returns and uint8_t to indicate whether the command was added (*true/1 value*) or not (*false/0 value*).
 
 Example:
 
@@ -118,9 +118,9 @@ void set_LedOn ( void ) {
 
 ---
 
-##### AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function )() );
+##### uint8_t AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function )() );
 
-Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Return and uint8_t to indicate whether the command was added (*true value*) or not (*false value*).
+Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Returns and uint8_t to indicate whether the command was added (*true/1 value*) or not (*false/0 value*).
 
 Example:
 
@@ -141,9 +141,9 @@ void set_LedOn ( void ) {
 ---
 
 
-##### ReadNext( )
+##### char* ReadNext( )
 
-Return the address of the string that contains the next parameter, if there is no next parameter, it contains the value NULL. It is normally used within the function called by the "command" to retrieve any parameters.
+Returns the address of the string that contains the next parameter, if there is no next parameter, it contains the value NULL. It is normally used within the function called by the "command" to retrieve any parameters.
 
 Example:
 
@@ -156,9 +156,9 @@ cPar = mySerCmd.ReadNext( );
 
 ---
 
-##### Print( )
+##### void Print( )
 
-It allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*) or a signed/unsigned long (*long, unsigned long*) to the serial port (*hardware or software*) associated with the SerialCmd.
+It allows to send a String (*class String*), a character string (*char\**), a signed/unsigned character (*char, unsigned char*), a signed/unsigned integer (*int, unsigned int*), a signed/unsigned long (*long, unsigned long*) or a float/double (*float, double*), to the serial port (*hardware or software*) associated with the SerialCmd.
 
 On AVR architecture it also allows the use of the macro F (), with constant strings, to reduce the SRAM occupation. 
 
@@ -176,9 +176,9 @@ mySerCmd.Print( F ( "This is a message \r\n" ) );
 
 ---
 
-##### ReadSer( )
+##### int8_t ReadSer( )
 
-It **must** be called **continuously** inside the loop () to receive and interpret the commands received from the serial port (*hardware or software*)
+It **must** be called **continuously** inside the loop () to receive and interpret the commands received from the serial port (*hardware or software*). Returns an int8_t that can take the following values: **-1**: terminator character not yet encountered; **0**: command **not** recognized;  **1**: command recognized.
 
 Example:
 
@@ -189,7 +189,7 @@ void setup( ) {
 }
 
 void loop( ) {
-	mySerCmd.ReadSer( );
+	ret = mySerCmd.ReadSer( );
    ...
    ...
 }
@@ -198,9 +198,9 @@ void loop( ) {
 
 ---
 
-##### ReadString ( char * theCmd )
+##### int8_t ReadString ( char * theCmd )
 
-It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Return and uint8_t to indicate whether the command was recognized (*true value*) or not (*false value*).
+It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*).
 
 Example:
 
@@ -210,9 +210,9 @@ ret = mySerCmd.ReadString ( (char *) "LEDON" );
 
 ---
 
-##### ReadString ( const __FlashStringHelper * theCmd )
+##### int8_t ReadString ( const __FlashStringHelper * theCmd )
 
-Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Return and uint8_t to indicate whether the command was recognized (*true value*) or not (*false value*).
+Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*).
 
 Example:
 
@@ -229,6 +229,25 @@ ret = mySerCmd.ReadString ( F ( "LEDON" ) );
 The following example uses the "**Serial**" serial port to manage three commands: "LEDON" which turns on the LED on the board, "LEDOF" which turns off the LED on the board and the command "LEDBL,*time*" which makes the LED blinking with half-period equal to the "*time*" parameter (*in milliseconds*). The number of flashes is counted and when a certain number is reached, the LED, by means of a command from the "**buffer**" (*therefore from the application program*), is switched off.
 
 ```
+/*
+   Demo_SerialCmd - A simple program to demostrate the use of SerialCmd
+   library to show the capability to receive commands via serial port.
+
+   Copyright (C) 2013 - 2022 Guglielmo Braguglia
+
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+   This is free software: you can redistribute it and/or modify it under
+   the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This software is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+*/
 #include <stdlib.h>
 #include <SerialCmd.h>
 
@@ -289,6 +308,7 @@ void setup() {
    pinMode ( LED_BUILTIN, OUTPUT );
    digitalWrite ( LED_BUILTIN, ledStatus );
    Serial.begin ( 9600 );
+   while ( !Serial ) delay ( 500 );
    //
 #ifdef ARDUINO_ARCH_STM32
    for ( uint8_t i = 0; i < 7; i++ ) {
@@ -321,7 +341,7 @@ void setup() {
 }
 
 void loop() {
-   uint8_t ret;
+   int8_t ret;
    //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
       ledStatus = !ledStatus;
@@ -344,9 +364,10 @@ void loop() {
       }
    }
    //
-   mySerCmd.ReadSer();
+   ret = mySerCmd.ReadSer();
+   if ( ret == 0 )
+      mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
 }
-
 ```
 
 ---

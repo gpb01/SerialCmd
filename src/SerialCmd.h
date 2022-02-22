@@ -92,10 +92,10 @@ class SerialCmd {
    public:
 
       SerialCmd ( Stream &mySerial, char TermCh = SERIALCMD_CR, char * SepCh = ( char * ) SERIALCMD_COMMA );                           // Constructor
-      void ReadSer ( void );
+      int8_t  ReadSer ( void );
       uint8_t AddCmd ( const char *, char, void ( * ) () );
-      char * ReadNext ( void );
-      uint8_t ReadString ( char * );
+      char *  ReadNext ( void );
+      int8_t  ReadString ( char * );
       void Print ( String & );
       void Print ( char[] );
       void Print ( char );
@@ -104,9 +104,11 @@ class SerialCmd {
       void Print ( unsigned int );
       void Print ( long );
       void Print ( unsigned long );
+      void Print (float, int numDec = 2 );
+      void Print (double, int numDec = 2 );
 #ifdef __AVR__
       uint8_t AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
-      uint8_t ReadString ( const __FlashStringHelper * );
+      int8_t  ReadString ( const __FlashStringHelper * );
       void Print ( const __FlashStringHelper * );
 #endif
 
@@ -132,7 +134,7 @@ class SerialCmd {
 
       uint8_t SerialCmd_Idx;                                      // General index for FOR loops
       uint8_t SerialCmd_BufferIdx;                                // Serial buffer Index
-      uint8_t SerialCmd_Found;                                    // Valid command found
+      int8_t  SerialCmd_Found;                                    // Valid command found
 
       Stream* theSerial;										            // Serial stream in use
 

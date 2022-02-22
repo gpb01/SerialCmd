@@ -54,7 +54,7 @@
 */
 
 void SerialCmd::ClearBuffer() {
-   SerialCmd_Buffer[0] = 0x00;
+	memset (SerialCmd_Buffer, 0x00, SERIALCMD_MAXBUFFER + 1);
    SerialCmd_BufferIdx = 0;
 }
 
@@ -68,13 +68,13 @@ void SerialCmd::ConvertUC() {
 
 void SerialCmd::ReadStringCommon () {
    SerialCmd_Command = strtok_r ( SerialCmd_Buffer, SerialCmd_Sep, &SerialCmd_Last );
-   SerialCmd_Found = false;
+   SerialCmd_Found = 0;
    if ( SerialCmd_Command != NULL ) {
       for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
          if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
             if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource <= 0 ) {
                ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
-               SerialCmd_Found = true;
+               SerialCmd_Found = 1;
                break;
             }
          }
@@ -121,42 +121,42 @@ uint8_t SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSour
 }
 #endif
 
-void SerialCmd::ReadSer() {
+int8_t SerialCmd::ReadSer() {
+	SerialCmd_Found = -1;
    while ( theSerial->available() > 0 ) {
       SerialCmd_InChar = theSerial->read();
       if ( SerialCmd_InChar == SerialCmd_Term ) {
          SerialCmd_Command = strtok_r ( SerialCmd_Buffer, SerialCmd_Sep, &SerialCmd_Last );
-         SerialCmd_Found = false;
+         SerialCmd_Found = 0;
          if ( SerialCmd_Command != NULL ) {
             if ( SERIALCMD_FORCEUC ) ConvertUC();
             for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
                if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
                   if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource >= 0 ) {
                      ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
-                     SerialCmd_Found = true;
+                     SerialCmd_Found = 1;
                      break;
                   }
                }
             }
          }
          ClearBuffer();
-         if ( !SerialCmd_Found ) {
-            // Command NOT found
-            Print ( ( char* ) "ERROR: Command not found.\r\n" );
-         }
       } else {
          if ( SerialCmd_BufferIdx < SERIALCMD_MAXBUFFER ) {
-            SerialCmd_Buffer[SerialCmd_BufferIdx++] = SerialCmd_InChar;
-            SerialCmd_Buffer[SerialCmd_BufferIdx] = 0x00;
+				if ( (SerialCmd_InChar != SERIALCMD_CR) && (SerialCmd_InChar != SERIALCMD_LF) ) {
+               SerialCmd_Buffer[SerialCmd_BufferIdx++] = SerialCmd_InChar;
+               SerialCmd_Buffer[SerialCmd_BufferIdx] = 0x00;
+				}
          } else {
             ClearBuffer();
          }
       }
    }
+	return SerialCmd_Found;
 }
 
-uint8_t SerialCmd::ReadString ( char * theCmd ) {
-   if ( strlen ( theCmd ) >= SERIALCMD_MAXBUFFER ) return false;
+int8_t SerialCmd::ReadString ( char * theCmd ) {
+   if ( strlen ( theCmd ) >= SERIALCMD_MAXBUFFER ) return 0;
    //
    strcpy ( SerialCmd_Buffer, theCmd );
    ReadStringCommon();
@@ -164,8 +164,8 @@ uint8_t SerialCmd::ReadString ( char * theCmd ) {
 }
 
 #ifdef __AVR__
-uint8_t SerialCmd::ReadString ( const __FlashStringHelper * theCmd ) {
-   if ( strlen_P ( ( const char* ) theCmd ) >= SERIALCMD_MAXBUFFER ) return false;
+int8_t SerialCmd::ReadString ( const __FlashStringHelper * theCmd ) {
+   if ( strlen_P ( ( const char* ) theCmd ) >= SERIALCMD_MAXBUFFER ) return 0;
    //
    strcpy_P ( SerialCmd_Buffer, ( const char* ) theCmd );
    ReadStringCommon();
@@ -221,4 +221,14 @@ void SerialCmd::Print ( long theLong ) {
 void SerialCmd::Print ( unsigned long theULong ) {
    if ( ( theSerial ) )
       theSerial->print ( theULong );
+}
+
+void SerialCmd::Print ( float theFloat, int numDec ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theFloat, numDec );
+}
+
+void SerialCmd::Print ( double theDouble, int numDec ) {
+   if ( ( theSerial ) )
+      theSerial->print ( theDouble, numDec );
 }

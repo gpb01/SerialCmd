@@ -15,8 +15,8 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
-   
-*/ 
+
+*/
 #include <stdlib.h>
 #include <SerialCmd.h>
 
@@ -77,6 +77,7 @@ void setup() {
    pinMode ( LED_BUILTIN, OUTPUT );
    digitalWrite ( LED_BUILTIN, ledStatus );
    Serial.begin ( 9600 );
+   while ( !Serial ) delay ( 500 );
    //
 #ifdef ARDUINO_ARCH_STM32
    for ( uint8_t i = 0; i < 7; i++ ) {
@@ -109,7 +110,7 @@ void setup() {
 }
 
 void loop() {
-   uint8_t ret;
+   int8_t ret;
    //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
       ledStatus = !ledStatus;
@@ -132,5 +133,7 @@ void loop() {
       }
    }
    //
-   mySerCmd.ReadSer();
+   ret = mySerCmd.ReadSer();
+   if ( ret == 0 )
+      mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
 }
