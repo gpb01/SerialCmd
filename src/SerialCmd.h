@@ -95,7 +95,7 @@ class SerialCmd {
       int8_t  ReadSer ( void );
       uint8_t AddCmd ( const char *, char, void ( * ) () );
       char *  ReadNext ( void );
-      int8_t  ReadString ( char * );
+      int8_t  ReadString ( char *, uint8_t fValidate = false );
       void Print ( String & );
       void Print ( char[] );
       void Print ( char );
@@ -104,11 +104,11 @@ class SerialCmd {
       void Print ( unsigned int );
       void Print ( long );
       void Print ( unsigned long );
-      void Print (float, int numDec = 2 );
-      void Print (double, int numDec = 2 );
+      void Print ( float, int numDec = 2 );
+      void Print ( double, int numDec = 2 );
 #ifdef __AVR__
       uint8_t AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
-      int8_t  ReadString ( const __FlashStringHelper * );
+      int8_t  ReadString ( const __FlashStringHelper *, uint8_t fValidate = false );
       void Print ( const __FlashStringHelper * );
 #endif
 
@@ -138,8 +138,9 @@ class SerialCmd {
 
       Stream* theSerial;										            // Serial stream in use
 
-      void ClearBuffer ( void );
-      void ConvertUC ( void );
-      void ReadStringCommon ( void );
+      void ClearBuffer ( void );                                  // Clear the SerialCmd_Buffer filling with 0x00
+      void ConvertUC ( void );                                    // Convert the lower case characters of SerialCmd_Command to upper case
+      void ReadStringCommon ( void );                             // Common function used by the two version of ReadString to EXECUTE a command
+      void ValidateCommand ( void );                              // Common function used by the two version of ReadString to VALIDATE a command
 };
 #endif

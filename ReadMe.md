@@ -1,4 +1,4 @@
-# SerialCmd Library v1.1.0
+# SerialCmd Library v1.1.1
 © 2022 Guglielmo Braguglia
 
 ---
@@ -198,9 +198,9 @@ void loop( ) {
 
 ---
 
-##### int8_t ReadString ( char * theCmd )
+##### int8_t ReadString ( char * theCmd, uint8\_t fValidate = false )
 
-It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*).
+It is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*). The optional fValidate parameter (*default false*) allows you to call the function only to check if the received command exists, without actually executing the associated function.
 
 Example:
 
@@ -210,9 +210,9 @@ ret = mySerCmd.ReadString ( (char *) "LEDON" );
 
 ---
 
-##### int8_t ReadString ( const __FlashStringHelper * theCmd )
+##### int8_t ReadString ( const __FlashStringHelper * theCmd, uint8\_t fValidate = false )
 
-Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*).
+Valid only on **AVR** architecture, it is used to send a command from the application as if it had been received from the serial line. The content of the string must be the same as it would have been sent through the serial port (*including parameters*). Returns and int8_t to indicate whether the command was recognized (*true/1 value*) or not (*false/0 value*). The optional fValidate parameter (*default false*) allows you to call the function only to check if the received command exists, without actually executing the associated function.
 
 Example:
 

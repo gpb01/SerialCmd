@@ -16,8 +16,8 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
-   
-*/ 
+
+*/
 
 #if defined ( ARDUINO_ARCH_ESP8266 )
 #include <ESP8266WiFi.h>
@@ -38,6 +38,7 @@ const char* password = NET_PSW;        // Your network PSW  in credential.h file
 
 SerialCmd   mySerCmd ( Serial );
 bool        isBlinking   = false;      // Indicates whether blinking is active or not
+int8_t      lstCmdStatus = -1;         // indicate the last command status -1:none, 0:NOT valid, 1:valid
 uint8_t     ledStatus    = LED_OFF;    // BUILTIN_LED status (OFF/ON)
 uint8_t     blinkingCnt  = 0;          // Number of led status changes before turning off blinking
 uint32_t    blinkingTime = 0;          // Time of led status change
@@ -106,7 +107,26 @@ char* checkWiFiCommand ( void ) {
                   // empty line, send response to client
                   client.println ( "HTTP/1.1 200 OK" );
                   client.println ( "Content-type:text/html" );
+                  client.println ( "Connection: close" );
                   client.println();
+
+                  // Display the HTML web page
+                  client.println ( "<!DOCTYPE html><html>" );
+                  client.println ( "<body><h1>ESP SerialCmd Server</h1>" );
+                  client.println ( "<p>Please, enter a valid command using the following syntax: http://" );
+                  client.print   ( WiFi.localIP() );
+                  client.println ( "/command,parameters</p>" );
+                  //
+                  if ( SERIALCMD_FORCEUC != 0 )
+                     client.println ( "<p>Note: lower case characters will be converted to upper case.</p>" );
+                  //
+                  if ( lstCmdStatus == 0 ) {
+                     client.println ( "<p>Last entered command was NOT recognized.</p>" );
+                  } else if ( lstCmdStatus == 1 ) {
+                     client.println ( "<p>Last entered command WAS recognized will be executed.</p>" );
+                  }
+                  client.println ( "</body></html>" );
+                  //
                   client.println();
                   break;
                } else {
@@ -118,6 +138,7 @@ char* checkWiFiCommand ( void ) {
                            strlcpy ( clientCommand, ( cmdStart + 5 ), ( int ) ( cmdStop - cmdStart - 5 ) );
                            if ( strcmp ( "favicon.ico", clientCommand ) != 0 ) {
                               retVal = clientCommand;
+                              lstCmdStatus = mySerCmd.ReadString ( retVal, true );
                            }
                         }
                      }
@@ -189,9 +210,10 @@ void loop() {
    //
    retVal = checkWiFiCommand();
    if ( retVal != NULL ) {
-      Serial.print ( "Received command: " );
+      Serial.print ( "HTTP received command: " );
       Serial.println ( retVal );
-      mySerCmd.ReadString ( retVal );
+      erc = mySerCmd.ReadString ( retVal );
+      lstCmdStatus = -1;
    }
    //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
