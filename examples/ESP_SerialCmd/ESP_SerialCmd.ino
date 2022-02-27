@@ -26,7 +26,7 @@
 #endif
 
 #include <string.h>
-#include <SerialCmd.h>
+#include "SerialCmd.h"
 #include "credential.h"
 
 #define LED_ON       HIGH              // set following your hardware
@@ -38,7 +38,6 @@ const char* password = NET_PSW;        // Your network PSW  in credential.h file
 
 SerialCmd   mySerCmd ( Serial );
 bool        isBlinking   = false;      // Indicates whether blinking is active or not
-int8_t      lstCmdStatus = -1;         // indicate the last command status -1:none, 0:NOT valid, 1:valid
 uint8_t     ledStatus    = LED_OFF;    // BUILTIN_LED status (OFF/ON)
 uint8_t     blinkingCnt  = 0;          // Number of led status changes before turning off blinking
 uint32_t    blinkingTime = 0;          // Time of led status change
@@ -75,18 +74,19 @@ void set_LEDBL ( void ) {
 
 
 char* checkWiFiCommand ( void ) {
-   static const uint8_t  BUF_LNG     = 200;       // HTML buffer max lenght
-   static const uint8_t  CMD_LNG     = 128;       // Command buffer max lenght
-   static const uint16_t NET_TIMEOUT = 2000;      // Browser session timeout
+   static const uint8_t  BUF_LNG      = 200;      // HTML buffer max lenght
+   static const uint8_t  CMD_LNG      = 128;      // Command buffer max lenght
+   static const uint16_t NET_TIMEOUT  = 2000;     // Browser session timeout
    static char           clientBuffer[BUF_LNG];   // HTML buffer
    static char           clientCommand[CMD_LNG];  // Command buffer for SerialCmd
    //
-   uint8_t               buf_idx     = 0;
-   uint32_t              lastMillis  = 0;
-   char                  c           = 0;
-   char*                 cmdStart    = NULL;
-   char*                 cmdStop     = NULL;
-   char*                 retVal      = NULL;
+   uint8_t               buf_idx      = 0;
+   int8_t                lstCmdStatus = -1;       // indicate the last command status -1:none, 0:NOT valid, 1:valid
+   uint32_t              lastMillis   = 0;
+   char                  c            = 0;
+   char*                 cmdStart     = NULL;
+   char*                 cmdStop      = NULL;
+   char*                 retVal       = NULL;
    //
    WiFiClient client = server.available();
    if ( client ) {
@@ -102,14 +102,16 @@ char* checkWiFiCommand ( void ) {
             lastMillis = millis();
             //
             if ( c == '\n' ) {
+               //
                // New Line received ...
                if ( strlen ( clientBuffer ) == 0 ) {
-                  // empty line, send response to client
+                  //
+                  // ... empty line, send response to client
                   client.println ( "HTTP/1.1 200 OK" );
                   client.println ( "Content-type:text/html" );
                   client.println ( "Connection: close" );
                   client.println();
-
+                  //
                   // Display the HTML web page
                   client.println ( "<!DOCTYPE html><html>" );
                   client.println ( "<body><h1>ESP SerialCmd Server</h1>" );
@@ -117,19 +119,25 @@ char* checkWiFiCommand ( void ) {
                   client.print   ( WiFi.localIP() );
                   client.println ( "/command,parameters</p>" );
                   //
-                  if ( SERIALCMD_FORCEUC != 0 )
+                  if ( SERIALCMD_FORCEUC != 0 ) {
                      client.println ( "<p>Note: lower case characters will be converted to upper case.</p>" );
+                  }
                   //
                   if ( lstCmdStatus == 0 ) {
                      client.println ( "<p>Last entered command was NOT recognized.</p>" );
+                     lstCmdStatus = -1;
+                     retVal = NULL;
                   } else if ( lstCmdStatus == 1 ) {
-                     client.println ( "<p>Last entered command WAS recognized will be executed.</p>" );
+                     client.println ( "<p>Last entered command WAS recognized and will be executed.</p>" );
+                     lstCmdStatus = -1;
                   }
                   client.println ( "</body></html>" );
                   //
                   client.println();
                   break;
                } else {
+                  //
+                  // ... search for HTTP GET line
                   cmdStart = strstr ( clientBuffer, "GET /" );
                   if ( cmdStart != NULL ) {
                      cmdStop = strstr ( clientBuffer, "HTTP" );
@@ -193,6 +201,8 @@ void setup() {
    mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
    //
    Serial.println();
+   Serial.print   ( "You are using SerialCmd ver. " );
+   Serial.println ( SERIALCMD_VER );
    Serial.println ( "Valid commands are:" );
    Serial.println ( "   LEDON" );
    Serial.println ( "   LEDOF" );
@@ -206,14 +216,13 @@ void setup() {
 
 void loop() {
    char*  retVal;
-   int8_t erc;
+   int8_t cmdStatus;
    //
    retVal = checkWiFiCommand();
    if ( retVal != NULL ) {
       Serial.print ( "HTTP received command: " );
       Serial.println ( retVal );
-      erc = mySerCmd.ReadString ( retVal );
-      lstCmdStatus = -1;
+      cmdStatus    = mySerCmd.ReadString ( retVal );
    }
    //
    if ( isBlinking && ( millis() - blinkingLast > blinkingTime ) ) {
@@ -227,8 +236,8 @@ void loop() {
       mySerCmd.ReadString ( ( char * ) "LEDOF" );
    }
    //
-   erc = mySerCmd.ReadSer();
-   if ( erc == 0 )
+   cmdStatus = mySerCmd.ReadSer();
+   if ( cmdStatus == false )
       mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
    //
    yield();

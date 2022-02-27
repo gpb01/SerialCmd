@@ -63,6 +63,8 @@
 #include <avr/pgmspace.h>
 #endif
 
+#define SERIALCMD_VER "1.1.2"                                     // SerialCmd library internal version
+
 // SerialCmd configuration. Adjust following your needs
 
 #define SERIALCMD_FORCEUC    0                                    // If set to 1 force uppercase for serial command
@@ -124,6 +126,7 @@ class SerialCmd {
       uint8_t SerialCmd_CmdCount;                                 // Number of defined Command/Function
 
       char SerialCmd_Buffer[SERIALCMD_MAXBUFFER + 1];             // Serial buffer for Command
+      char SerialCmd_BuffCmd[SERIALCMD_MAXCMDLNG + 1];            // Buffer for ONLY the commend part of the Buffer (NO parameters)
       char SerialCmd_InChar;                                      // Serial input character
       char * SerialCmd_Command = NULL;                            // Working variable used by strtok_r
       char * SerialCmd_Last = NULL;                               // State variable used by strtok_r

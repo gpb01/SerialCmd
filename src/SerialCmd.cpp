@@ -89,17 +89,19 @@ void SerialCmd::ValidateCommand () {
    //
    SerialCmd_Found = 0;
    if ( strlen ( SerialCmd_Buffer ) == 0 ) return;
+   memset ( SerialCmd_BuffCmd, 0x00, SERIALCMD_MAXCMDLNG + 1 );
    //
    for ( i = 0; i < strlen ( SerialCmd_Buffer ); i++ ) {
       if ( ( SerialCmd_Buffer[i] == SerialCmd_Sep[0] ) || ( SerialCmd_Buffer[i] == 0x00 ) ) break;
    }
    if ( i > SERIALCMD_MAXCMDLNG ) i = SERIALCMD_MAXCMDLNG;
+   strncpy (SerialCmd_BuffCmd, SerialCmd_Buffer, i );
    //
    for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
 #if ( SERIALCMD_FORCEUC == 0 )
-      if ( strcmp ( SerialCmd_Buffer, SerialCmd_CmdList[SerialCmd_Idx].command ) == 0 ) {
+      if ( strcmp ( SerialCmd_BuffCmd, SerialCmd_CmdList[SerialCmd_Idx].command ) == 0 ) {
 #else
-      if ( strcasecmp ( SerialCmd_Buffer, SerialCmd_CmdList[SerialCmd_Idx].command ) == 0 ) {
+      if ( strcasecmp ( SerialCmd_BuffCmd, SerialCmd_CmdList[SerialCmd_Idx].command ) == 0 ) {
 #endif
          if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource <= 0 ) {
             SerialCmd_Found = 1;
