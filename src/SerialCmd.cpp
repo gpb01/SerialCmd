@@ -10,7 +10,7 @@
       Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
                          http://husks.wordpress.com
 
-   Version 20220112
+   Version 20220309
 
    Please note:
 
@@ -74,7 +74,9 @@ void SerialCmd::ReadStringCommon () {
       for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
          if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
             if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource <= 0 ) {
-               ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
+               if ( SerialCmd_CmdList[SerialCmd_Idx].function != NULL ) {
+                  ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
+               }
                SerialCmd_Found = 1;
                break;
             }
@@ -82,6 +84,26 @@ void SerialCmd::ReadStringCommon () {
       }
    }
    ClearBuffer();
+}
+
+uint8_t SerialCmd::AddCmdCommon ( const char *command, char allowedSource, void ( *function ) () ) {
+   for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
+      if ( strncmp ( command, SerialCmd_CmdList[SerialCmd_Idx].command, strlen ( command ) ) == 0 ) {
+         SerialCmd_CmdList[SerialCmd_Idx].allowedSource = allowedSource;
+         SerialCmd_CmdList[SerialCmd_Idx].function = function;
+         return 1;
+      }
+   }
+   //
+   if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
+      strncpy ( SerialCmd_CmdList[SerialCmd_CmdCount].command, command, SERIALCMD_MAXCMDLNG );
+      SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
+      SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
+      SerialCmd_CmdCount++;
+      return 1;
+   } else {
+      return 0;
+   }
 }
 
 void SerialCmd::ValidateCommand () {
@@ -95,7 +117,7 @@ void SerialCmd::ValidateCommand () {
       if ( ( SerialCmd_Buffer[i] == SerialCmd_Sep[0] ) || ( SerialCmd_Buffer[i] == 0x00 ) ) break;
    }
    if ( i > SERIALCMD_MAXCMDLNG ) i = SERIALCMD_MAXCMDLNG;
-   strncpy (SerialCmd_BuffCmd, SerialCmd_Buffer, i );
+   strncpy ( SerialCmd_BuffCmd, SerialCmd_Buffer, i );
    //
    for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
 #if ( SERIALCMD_FORCEUC == 0 )
@@ -124,28 +146,16 @@ SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
 }
 
 uint8_t SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *function ) () ) {
-   if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
-      strncpy ( SerialCmd_CmdList[SerialCmd_CmdCount].command, command, SERIALCMD_MAXCMDLNG );
-      SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
-      SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
-      SerialCmd_CmdCount++;
-      return 1;
-   } else {
-      return 0;
-   }
+   return AddCmdCommon ( command, allowedSource, function );
 }
 
 #ifdef __AVR__
 uint8_t SerialCmd::AddCmd ( const __FlashStringHelper *command, char allowedSource, void ( *function ) () ) {
-   if ( SerialCmd_CmdCount < SERIALCMD_MAXCMDNUM ) {
-      strncpy_P ( SerialCmd_CmdList[SerialCmd_CmdCount].command, ( const char* ) command, SERIALCMD_MAXCMDLNG );
-      SerialCmd_CmdList[SerialCmd_CmdCount].allowedSource = allowedSource;
-      SerialCmd_CmdList[SerialCmd_CmdCount].function = function;
-      SerialCmd_CmdCount++;
-      return 1;
-   } else {
-      return 0;
-   }
+   char myCommand[SERIALCMD_MAXCMDLNG + 1];
+   //
+   memset ( myCommand, 0x00, SERIALCMD_MAXCMDLNG + 1 );
+   strncpy_P ( myCommand, ( const char* ) command, SERIALCMD_MAXCMDLNG );
+   return AddCmdCommon ( myCommand, allowedSource, function );
 }
 #endif
 
@@ -161,7 +171,9 @@ int8_t SerialCmd::ReadSer() {
             for ( SerialCmd_Idx = 0; SerialCmd_Idx < SerialCmd_CmdCount; SerialCmd_Idx++ ) {
                if ( strncmp ( SerialCmd_Command, SerialCmd_CmdList[SerialCmd_Idx].command, SERIALCMD_MAXCMDLNG ) == 0 ) {
                   if ( SerialCmd_CmdList[SerialCmd_Idx].allowedSource >= 0 ) {
-                     ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
+                     if ( SerialCmd_CmdList[SerialCmd_Idx].function != NULL ) {
+                        ( *SerialCmd_CmdList[SerialCmd_Idx].function ) ();
+                     }
                      SerialCmd_Found = 1;
                      break;
                   }

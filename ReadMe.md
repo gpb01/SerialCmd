@@ -1,4 +1,4 @@
-# SerialCmd Library v1.1.2
+# SerialCmd Library v1.1.3
 © 2022 Guglielmo Braguglia
 
 ---
@@ -100,6 +100,11 @@ SerialCmd mySerCmd( Serial, SERIALCMD_LF, (char *) SERIALCMD_SEMICOL );
 
 Add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Returns and uint8_t to indicate whether the command was added (*true/1 value*) or not (*false/0 value*).
 
+Starting from versioni 1.1.3 it is now possible to 'redefine' a command (*calling the AddCmd() method several times*), i.e., use the same command by dynamically associating it with another function or the NULL value.
+
+This makes it possible, for example, to enable and disable a command at run-time, simply by changing the function to which it refers either to the NULL value or to the true value of the function to be executed.
+As another example, it is possible to start with a command that calls a certain function and, when certain conditions occur, replace it with another function.
+
 Example:
 
 ```
@@ -121,6 +126,11 @@ void set_LedOn ( void ) {
 ##### uint8_t AddCmd( const __FlashStringHelper *command, char allowedSource, void ( *function )() );
 
 Valid only on **AVR** architecture, add a "command" to the list of recognized commands and define which function should be called. Parameter "allowedSource" can be one of those defined in .h (*SERIALCMD_FROMSTRING, SERIALCMD_FROMALL, SERIALCMD_FROMSERIAL*). Returns and uint8_t to indicate whether the command was added (*true/1 value*) or not (*false/0 value*).
+
+Starting from versioni 1.1.3 it is now possible to 'redefine' a command (*calling the AddCmd() method several times*), i.e., use the same command by dynamically associating it with another function or the NULL value.
+
+This makes it possible, for example, to enable and disable a command at run-time, simply by changing the function to which it refers either to the NULL value or to the true value of the function to be executed.
+As another example, it is possible to start with a command that calls a certain function and, when certain conditions occur, replace it with another function.
 
 Example:
 
@@ -254,6 +264,10 @@ The following example uses the "**Serial**" serial port to manage three commands
 #define LED_OFF   LOW               // adjust for your board
 #define LED_ON    HIGH              // adjust for your board
 
+#ifdef __AVR__
+#pragma message "INFO: Compiling with AVR F() macro enabled."
+#endif
+
 bool     isBlinking   = false;      // Indicates whether blinking is active or not
 uint8_t  ledStatus    = LED_OFF;    // BUILTIN_LED status (OFF/ON)
 uint8_t  blinkingCnt  = 0;          // Number of led status changes before turning off blinking
@@ -262,6 +276,8 @@ uint32_t blinkingLast = 0;          // Last millis() in which the status of the 
 
 SerialCmd mySerCmd ( Serial );      // Initialize the SerialCmd constructor using the "Serial" port
 
+// ------------------- User functions --------------------
+
 void sendOK ( void ) {
 #ifdef __AVR__
    mySerCmd.Print ( F ( "OK \r\n" ) );
@@ -269,6 +285,8 @@ void sendOK ( void ) {
    mySerCmd.Print ( ( char * ) "OK \r\n" );
 #endif
 }
+
+// --------------- Functions for SerialCmd ---------------
 
 void set_LEDON ( void ) {
    isBlinking = false;
@@ -303,6 +321,18 @@ void set_LEDBL ( void ) {
    sendOK();
 }
 
+void set_NLBL ( void ) {
+   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, NULL );
+   sendOK();
+}
+
+void set_YLBL ( void ) {
+   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
+   sendOK();
+}
+
+// ----------------------- setup() -----------------------
+
 void setup() {
    delay ( 500 );
    pinMode ( LED_BUILTIN, OUTPUT );
@@ -326,19 +356,25 @@ void setup() {
 #endif
    //
 #ifdef __AVR__
-   mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON );
-   mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF );
-   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
+   mySerCmd.AddCmd ( F ( "LEDON" ) , SERIALCMD_FROMALL, set_LEDON ); // BUILTIN  LED ON
+   mySerCmd.AddCmd ( F ( "LEDOF" ) , SERIALCMD_FROMALL, set_LEDOF ); // BUILTIN  LED OFF
+   mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL ); // BUILTIN  LED BLINK, period ms in parameter
+   mySerCmd.AddCmd ( F ( "SETNB" ) , SERIALCMD_FROMALL, set_NLBL );  // DISABLE  LEDBL command
+   mySerCmd.AddCmd ( F ( "SETYB" ) , SERIALCMD_FROMALL, set_YLBL );  // REENABLE LEDBL command
    //
    mySerCmd.Print ( F ( "INFO: Program running on AVR ... \r\n" ) );
 #else
    mySerCmd.AddCmd ( "LEDON", SERIALCMD_FROMALL, set_LEDON );
    mySerCmd.AddCmd ( "LEDOF", SERIALCMD_FROMALL, set_LEDOF );
    mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
+   mySerCmd.AddCmd ( "SETNB", SERIALCMD_FROMALL, set_NLBL );
+   mySerCmd.AddCmd ( "SETYB", SERIALCMD_FROMALL, set_YLBL );
    //
    mySerCmd.Print ( ( char * ) "INFO: Program running ... \r\n" );
 #endif
 }
+
+// ----------------------- loop() ------------------------
 
 void loop() {
    int8_t ret;

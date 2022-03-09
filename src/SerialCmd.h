@@ -10,7 +10,7 @@
       Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
                          http://husks.wordpress.com
 
-   Version 20220112
+   Version 20220309
 
    Please note:
 
@@ -63,7 +63,7 @@
 #include <avr/pgmspace.h>
 #endif
 
-#define SERIALCMD_VER "1.1.2"                                     // SerialCmd library internal version
+#define SERIALCMD_VER "1.1.3"                                     // SerialCmd library internal version
 
 // SerialCmd configuration. Adjust following your needs
 
@@ -141,9 +141,10 @@ class SerialCmd {
 
       Stream* theSerial;										            // Serial stream in use
 
-      void ClearBuffer ( void );                                  // Clear the SerialCmd_Buffer filling with 0x00
-      void ConvertUC ( void );                                    // Convert the lower case characters of SerialCmd_Command to upper case
-      void ReadStringCommon ( void );                             // Common function used by the two version of ReadString to EXECUTE a command
-      void ValidateCommand ( void );                              // Common function used by the two version of ReadString to VALIDATE a command
+      void    ClearBuffer ( void );                               // Clear the SerialCmd_Buffer filling with 0x00
+      void    ConvertUC ( void );                                 // Convert the lower case characters of SerialCmd_Command to upper case
+      void    ReadStringCommon ( void );                          // Common function used by the two version of ReadString to EXECUTE a command
+      void    ValidateCommand ( void );                           // Common function used by the two version of ReadString to VALIDATE a command
+      uint8_t AddCmdCommon ( const char *command, char allowedSource, void ( *function ) () ); // Common function used by the two version of AddCmd to ADD/MOD a command
 };
 #endif
