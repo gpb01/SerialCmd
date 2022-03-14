@@ -63,7 +63,13 @@
 #include <avr/pgmspace.h>
 #endif
 
-#define SERIALCMD_VER "1.1.3"                                     // SerialCmd library internal version
+// SerialCmd version
+
+#define SERIALCMD_VER    "1.1.3"                                  // SerialCmd library internal string   version
+#define SERIALCMD_VER_NUM 10103                                   // SerialCmd library internal numeric  version
+#define SERIALCMD_VER_MAJ     1                                   // SerialCmd library internal major    version
+#define SERIALCMD_VER_MIN     1                                   // SerialCmd library internal minor    version
+#define SERIALCMD_VER_REV     3                                   // SerialCmd library internal revision version
 
 // SerialCmd configuration. Adjust following your needs
 
