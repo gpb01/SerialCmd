@@ -22,6 +22,10 @@
 #include <SD.h>
 #include <SerialCmd.h>
 
+#if ( SERIALCMD_VER_NUM < 10103 )
+#error "This program can compile only with SerialCmd version 1.1.3 or greater"
+#endif
+
 #define SD_CS         10                     // Pin where the SD CS is connected
 #define MAX_LBL        5                     // Maximun number of labels in text file
 
