@@ -80,6 +80,7 @@ void set_LEDBL ( void ) {
    sendOK();
 }
 
+#ifdef __AVR__
 void set_NLBL ( void ) {
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, NULL );
    sendOK();
@@ -89,6 +90,17 @@ void set_YLBL ( void ) {
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
    sendOK();
 }
+#else
+void set_NLBL ( void ) {
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, NULL );
+   sendOK();
+}
+
+void set_YLBL ( void ) {
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
+   sendOK();
+}
+#endif
 
 // ----------------------- setup() -----------------------
 
