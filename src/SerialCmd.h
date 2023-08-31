@@ -3,20 +3,23 @@
    received over a phisical/software serial port and optimized to run
    also on ATtiny series.
 
-   Copyright (C) 2013 - 2022 Guglielmo Braguglia
+   Copyright (C) 2013 - 2023 Guglielmo Braguglia
 
    Based on the SerialCommand library :
       Copyright (C) 2012 Stefan Rado
       Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
                          http://husks.wordpress.com
 
-   Version 20220309
+   Version 20230831
 
    Please note:
 
    1. Adjust the #define(s) following your requirements :
       Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
       and SERIALCMD_MAXBUFFER to minimize the memory usage.
+      If you need a second, program-accessible buffer, containing the command
+      received before being processed, set SERIALCMD_PUBBUFFER to 1 otherwise leave
+      it to 0.
 
    2. Allowed string terminator from serial are:
         SERIALCMD_CR                 : Carriage Return (0x0D - char - default)
@@ -65,11 +68,11 @@
 
 // SerialCmd version
 
-#define SERIALCMD_VER    "1.1.3"                                  // SerialCmd library internal string   version
-#define SERIALCMD_VER_NUM 10103                                   // SerialCmd library internal numeric  version
+#define SERIALCMD_VER    "1.1.4"                                  // SerialCmd library internal string   version
+#define SERIALCMD_VER_NUM 10104                                   // SerialCmd library internal numeric  version
 #define SERIALCMD_VER_MAJ     1                                   // SerialCmd library internal major    version
 #define SERIALCMD_VER_MIN     1                                   // SerialCmd library internal minor    version
-#define SERIALCMD_VER_REV     3                                   // SerialCmd library internal revision version
+#define SERIALCMD_VER_REV     4                                   // SerialCmd library internal revision version
 
 // SerialCmd configuration. Adjust following your needs
 
@@ -77,6 +80,8 @@
 #define SERIALCMD_MAXCMDNUM  8                                    // Max Number of Command
 #define SERIALCMD_MAXCMDLNG  6                                    // Max Command Length
 #define SERIALCMD_MAXBUFFER 30                                    // Max Buffer  Length
+
+#define SERIALCMD_PUBBUFFER  0                                    // If set to 1 create a public double buffer to read lines
 
 // Command source validity
 #define SERIALCMD_FROMSTRING -1                                   // Valid only as SerialCmd_ReadString command
@@ -99,7 +104,7 @@
 class SerialCmd {
    public:
 
-      SerialCmd ( Stream &mySerial, char TermCh = SERIALCMD_CR, char * SepCh = ( char * ) SERIALCMD_COMMA );                           // Constructor
+      SerialCmd ( Stream &mySerial, char TermCh = SERIALCMD_CR, char * SepCh = ( char * ) SERIALCMD_COMMA );   // Constructor
       int8_t  ReadSer ( void );
       uint8_t AddCmd ( const char *, char, void ( * ) () );
       char *  ReadNext ( void );
@@ -118,6 +123,10 @@ class SerialCmd {
       uint8_t AddCmd ( const __FlashStringHelper *, char, void ( * ) () );
       int8_t  ReadString ( const __FlashStringHelper *, uint8_t fValidate = false );
       void Print ( const __FlashStringHelper * );
+#endif
+
+#if ( SERIALCMD_PUBBUFFER == 1 )
+      char lastLine[SERIALCMD_MAXBUFFER + 1];                     // Create a double buffer read lines public
 #endif
 
    private:

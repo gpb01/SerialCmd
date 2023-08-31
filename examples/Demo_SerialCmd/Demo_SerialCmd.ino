@@ -172,6 +172,12 @@ void loop() {
    }
    //
    ret = mySerCmd.ReadSer();
-   if ( ret == 0 )
+   if ( ret == 0 ) {
       mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
+#if ( SERIALCMD_PUBBUFFER == 1 )
+      mySerCmd.Print ( ( char * ) "       line entered : " );
+      mySerCmd.Print ( mySerCmd.lastLine );
+      mySerCmd.Print ( ( char * ) "\r\n" );
+#endif
+   }
 }

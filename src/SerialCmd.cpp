@@ -3,7 +3,7 @@
    received over a phisical/software serial port and optimized to run
    also on ATtiny series.
 
-   Copyright (C) 2013 - 2022 Guglielmo Braguglia
+   Copyright (C) 2013 - 2023 Guglielmo Braguglia
 
    Based on the SerialCommand library :
       Copyright (C) 2012 Stefan Rado
@@ -17,6 +17,9 @@
    1. Adjust the #define(s) following your requirements :
       Use the real necessary values for SERIALCMD_MAXCMDNUM, SERIALCMD_MAXCMDLNG
       and SERIALCMD_MAXBUFFER to minimize the memory usage.
+      If you need a second, program-accessible buffer, containing the command
+      received before being processed, set SERIALCMD_PUBBUFFER to 1 otherwise leave
+      it to 0.
 
    2. Allowed string terminator from serial are:
         SERIALCMD_CR                 : Carriage Return (0x0D - char - default)
@@ -142,7 +145,15 @@ SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
    SerialCmd_CmdCount = 0;
    theSerial = &mySerial;
    SerialCmd_Term = TermCh;
-   strlcpy ( SerialCmd_Sep, SepCh, 2 );
+   /*
+   Aug, 2023 - gpb01
+   Since Renesas compiler does NOT implement the strlcpy() we can't use:
+      strlcpy ( SerialCmd_Sep, SepCh, 2 );
+   and we replaced it with strncpy().
+   */
+   strncpy ( SerialCmd_Sep, SepCh, 1 );
+   strncpy ( (SerialCmd_Sep + 1 ), ( char * ) SERIALCMD_NULL, 1 );
+   
 }
 
 uint8_t SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *function ) () ) {
@@ -164,6 +175,9 @@ int8_t SerialCmd::ReadSer() {
    while ( theSerial->available() > 0 ) {
       SerialCmd_InChar = theSerial->read();
       if ( SerialCmd_InChar == SerialCmd_Term ) {
+#if ( SERIALCMD_PUBBUFFER == 1)		  
+         strcpy(lastLine, SerialCmd_Buffer);  // copy to public buffer
+#endif		  
          SerialCmd_Command = strtok_r ( SerialCmd_Buffer, SerialCmd_Sep, &SerialCmd_Last );
          SerialCmd_Found = 0;
          if ( SerialCmd_Command != NULL ) {
@@ -226,7 +240,8 @@ char * SerialCmd::ReadNext() {
 }
 
 void SerialCmd::Print ( String &theClassString ) {
-   theSerial->write ( theClassString.c_str(), theClassString.length() );
+   if ( ( theSerial ) )
+      theSerial->write ( theClassString.c_str(), theClassString.length() );
 }
 
 void SerialCmd::Print ( char theString[] ) {

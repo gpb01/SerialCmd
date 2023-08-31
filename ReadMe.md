@@ -1,4 +1,4 @@
-# SerialCmd Library v1.1.3
+# SerialCmd Library v1.1.4
 © 2022 Guglielmo Braguglia
 
 ---
@@ -26,6 +26,8 @@ Through a series of #define, present in the .h of the library, it is possible to
 #define SERIALCMD_MAXCMDNUM  8             // Max Number of Command
 #define SERIALCMD_MAXCMDLNG  6             // Max Command Length
 #define SERIALCMD_MAXBUFFER 30             // Max Buffer  Length
+
+#define SERIALCMD_PUBBUFFER  0             // If set to 1 create a public double buffer
 ```
 
 SERIALCMD_MAXCMDNUM: Indicates the maximum number of different commands that the library must be able to recognize.
@@ -33,6 +35,12 @@ SERIALCMD_MAXCMDNUM: Indicates the maximum number of different commands that the
 SERIALCMD_MAXCMDLNG: Indicates the maximum length, expressed in characters, of the identifier of the single command.
 
 SERIALCMD_MAXBUFFER: Indicates the maximum length, expressed in characters, of the buffer in which the command is stored together with all its parameters and separators.
+
+SERIALCMD_PUBBUFFER: It can be either 0 or 1 and indicates whether or not a second buffer should be created so that the entered line can be retrieved from the program..
+
+##### Public Variables
+
+When the SERIALCMD_PUBBUFFER parameter is set to 1, a public, program-accessible variable named **lastLine** is created for the class. It will contain the entire line (*up to the terminator*) received by the library, before it was processed. See the demo program for an example of its use.
 
 ##### Customization
 
@@ -321,6 +329,7 @@ void set_LEDBL ( void ) {
    sendOK();
 }
 
+#ifdef __AVR__
 void set_NLBL ( void ) {
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, NULL );
    sendOK();
@@ -330,6 +339,17 @@ void set_YLBL ( void ) {
    mySerCmd.AddCmd ( F ( "LEDBL" ) , SERIALCMD_FROMALL, set_LEDBL );
    sendOK();
 }
+#else
+void set_NLBL ( void ) {
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, NULL );
+   sendOK();
+}
+
+void set_YLBL ( void ) {
+   mySerCmd.AddCmd ( "LEDBL", SERIALCMD_FROMALL, set_LEDBL );
+   sendOK();
+}
+#endif
 
 // ----------------------- setup() -----------------------
 
@@ -401,8 +421,14 @@ void loop() {
    }
    //
    ret = mySerCmd.ReadSer();
-   if ( ret == 0 )
+   if ( ret == 0 ) {
       mySerCmd.Print ( ( char * ) "ERROR: Urecognized command. \r\n" );
+#if ( SERIALCMD_PUBBUFFER == 1 )
+      mySerCmd.Print ( ( char * ) "       line entered : " );
+      mySerCmd.Print ( mySerCmd.lastLine );
+      mySerCmd.Print ( ( char * ) "\r\n" );
+#endif
+   }
 }
 ```
 
