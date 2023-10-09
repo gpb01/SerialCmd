@@ -10,7 +10,7 @@
       Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
                          http://husks.wordpress.com
 
-   Version 20230831
+   Version 20231009
 
    Please note:
 
@@ -68,11 +68,11 @@
 
 // SerialCmd version
 
-#define SERIALCMD_VER    "1.1.4"                                  // SerialCmd library internal string   version
-#define SERIALCMD_VER_NUM 10104                                   // SerialCmd library internal numeric  version
+#define SERIALCMD_VER    "1.1.5"                                  // SerialCmd library internal string   version
+#define SERIALCMD_VER_NUM 10105                                   // SerialCmd library internal numeric  version
 #define SERIALCMD_VER_MAJ     1                                   // SerialCmd library internal major    version
 #define SERIALCMD_VER_MIN     1                                   // SerialCmd library internal minor    version
-#define SERIALCMD_VER_REV     4                                   // SerialCmd library internal revision version
+#define SERIALCMD_VER_REV     5                                   // SerialCmd library internal revision version
 
 // SerialCmd configuration. Adjust following your needs
 
