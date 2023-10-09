@@ -145,6 +145,8 @@ SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
    SerialCmd_CmdCount = 0;
    theSerial = &mySerial;
    SerialCmd_Term = TermCh;
+   
+#if defined ( ARDUINO_ARCH_RENESAS )
    /*
    Aug, 2023 - gpb01
    Since Renesas compiler does NOT implement the strlcpy() we can't use:
@@ -153,7 +155,9 @@ SerialCmd::SerialCmd ( Stream &mySerial, char TermCh, char * SepCh ) {
    */
    strncpy ( SerialCmd_Sep, SepCh, 1 );
    strncpy ( (SerialCmd_Sep + 1 ), ( char * ) SERIALCMD_NULL, 1 );
-   
+#else
+   strlcpy ( SerialCmd_Sep, SepCh, 2 );
+#endif   
 }
 
 uint8_t SerialCmd::AddCmd ( const char *command, char allowedSource, void ( *function ) () ) {
